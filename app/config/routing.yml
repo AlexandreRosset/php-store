@@ -1,0 +1,17 @@
+store:
+    resource: "@storeBundle/Controller/"
+    prefix:   /
+
+app:
+    resource: '@AppBundle/Controller/'
+    type: annotation
+
+login:
+    path: /login
+    defaults: { _controller: storeBundle:store:login }
+
+login_check:
+    path: /admin/login_check
+
+logout:
+    path: /admin/logout

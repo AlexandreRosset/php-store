@@ -1,0 +1,44 @@
+{% extends "::base.html.twig" %}
+
+{% block title %}Accueil Store php{% endblock %}
+
+{% block body %}
+<h1>Bienvenue dans le store php</h1>
+<table>
+  <tr>
+    <th>
+      nom
+    </th>
+    <th>
+      prix
+    </th>
+    <th>
+      quantité
+    </th>
+    <th>
+      info
+    </th>
+    <th>
+      actions
+    </th>
+  </tr>
+  {% for pro in produits %}
+    <tr>
+      <td>{{pro.nom}}</td>
+      <td>
+        {{pro.prix}}€
+      </td>
+      <td>
+        {{pro.quantite}}
+      </td>
+      <td>
+        {{pro.info}}
+      </td>
+      <td>
+          <a href="{{path("details", {"id": pro.id})}}">détails</a><br />
+          <a href="{{path("panier", {"id": pro.id})}}">ajouter au panier</a>
+      </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
