@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="user")
  * @ORM\Entity(repositoryClass="storeBundle\Repository\userRepository")
  */
-class user
+class User
 {
     /**
      * @var int
@@ -156,4 +156,3 @@ class user
         return $this->roles;
     }
 }
-

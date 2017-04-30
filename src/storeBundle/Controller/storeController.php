@@ -5,7 +5,14 @@ namespace storeBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Security\Core\SecurityContext;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use storeBundle\Entity\Produit;
+
 
 
 class storeController extends Controller
@@ -23,20 +30,20 @@ class storeController extends Controller
     }
 
     /**
-     * @Route("/Login")
+     * @Route("/Login", name="Login")
      */
      public function loginAction(Request $request)
  {
      // If user is already authenticated, we redirect him to home page
-     if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
-         return $this->redirectToRoute('home');
-     }
+     /*if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_REMEMBERED')) {
+         return $this->redirectToRoute('Accueil');
+     }*/
 
      // The service authentication_utils allows to get user name
      // and an error when the forms was already submitted but invalid
      $authenticationUtils = $this->get('security.authentication_utils');
 
-     return $this->render('UserBundle:Security:login.html.twig', array(
+     return $this->render('storeBundle:store:login.html.twig', array(
          'last_username' => $authenticationUtils->getLastUsername(),
          'error'         => $authenticationUtils->getLastAuthenticationError(),
      ));
@@ -47,9 +54,7 @@ class storeController extends Controller
      */
     public function RegisterAction()
     {
-        return $this->render('storeBundle:store:register.html.twig', array(
-            // ...
-        ));
+        return $this->render('storeBundle:store:register.html.twig', array());
     }
 
     /**
@@ -63,7 +68,7 @@ class storeController extends Controller
     }
 
     /**
-     * @Route("/Detail/{id}", name="detail")
+     * @Route("/Detail/{id}", name="details")
      */
     public function DetailAction($id)
     {
@@ -105,13 +110,32 @@ class storeController extends Controller
     }
 
     /**
-     * @Route("/AddProduit")
+     * @Route("/AddProduit", name="AddProduit")
      */
-    public function AddProduitAction()
+    public function AddProduitAction(Request $request)
     {
-        return $this->render('storeBundle:store:add_produit.html.twig', array(
-            // ...
-        ));
+        $em = $this->getDoctrine()->getEntityManager();
+
+        $form = $this->createFormBuilder(new Produit())
+          ->add("nom")
+          ->add("prix", MoneyType::class)
+          ->add("quantite", IntegerType::class)
+          ->add("info")
+          ->add("detail")
+          ->add("submit", SubmitType::class, array('label' => 'Ajouter'))
+          ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($request->isMethod('post')) {
+          $produit = $form->getData();
+          $em->persist($produit);
+          $em->flush();
+          $id = $produit->getId();
+
+          return $this->redirectToRoute("Accueil");
+        }
+        return $this->render('storeBundle:store:add_produit.html.twig', array("form"=>$form->createView()));
     }
 
     /**
@@ -125,13 +149,27 @@ class storeController extends Controller
     }
 
     /**
-     * @Route("/RemoveProduit")
+     * @Route("/RemoveProduit", name="DelProduit")
      */
-    public function RemoveProduitAction()
+    public function RemoveProduitAction(Request $request)
     {
-        return $this->render('storeBundle:store:remove_produit.html.twig', array(
-            // ...
-        ));
+        $em = $this->getDoctrine()->getEntityManager();
+
+        $produitRepo = $em->getRepository("storeBundle:Produit");
+        $produits = $produitRepo->findAll();
+
+        $id = substr(strrchr($request->get('_route'), "?"), 4);
+        if ($id != null) {
+          $em = $this->getDoctrine()->getEntityManager();
+
+          $ProduitRepo = $em->getRepository("storeBundle:Produit");
+          $produit = $ProduitRepo->find($id);
+          $em->remove($produit);
+          $em->flush();
+
+          return $this->redirectToRoute("Accueil");
+        }
+        return $this->render('storeBundle:store:remove_produit.html.twig', array("produits" => $produits));
     }
 
     /**
